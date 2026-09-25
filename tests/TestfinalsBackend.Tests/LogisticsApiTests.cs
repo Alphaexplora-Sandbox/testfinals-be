@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc.Testing;
 using TestfinalsBackend.Domain;
@@ -39,6 +40,38 @@ public class LogisticsApiTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
+    public async Task Auth_Me_WithValidToken_ReturnsUserProfile()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "token-dispatcher-session-xyz");
+
+        var response = await client.GetAsync("/api/v1/auth/me");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var user = await response.Content.ReadFromJsonAsync<UserProfile>();
+        Assert.NotNull(user);
+        Assert.Equal("dispatcher@logipulse.io", user!.Email);
+    }
+
+    [Fact]
+    public async Task Auth_Me_WithoutToken_ReturnsUnauthorized()
+    {
+        var client = _factory.CreateClient();
+        var response = await client.GetAsync("/api/v1/auth/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Auth_Me_WithInvalidToken_ReturnsUnauthorized()
+    {
+        var client = _factory.CreateClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", "non-existent-token");
+
+        var response = await client.GetAsync("/api/v1/auth/me");
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Shipments_GetAll_ReturnsSeededShipments()
     {
         var client = _factory.CreateClient();
@@ -50,7 +83,31 @@ public class LogisticsApiTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Shipments_TrackByCode_ReturnsMatchingShipment()
+    public async Task Shipments_GetAll_WithFilterAndSearch_ReturnsFiltered()
+    {
+        var client = _factory.CreateClient();
+        var filteredByStatus = await client.GetFromJsonAsync<List<Shipment>>("/api/v1/shipments?status=In%20Transit");
+        Assert.NotNull(filteredByStatus);
+        Assert.All(filteredByStatus!, s => Assert.Equal(ShipmentStatuses.InTransit, s.Status));
+
+        var filteredBySearch = await client.GetFromJsonAsync<List<Shipment>>("/api/v1/shipments?search=Austin");
+        Assert.NotNull(filteredBySearch);
+        Assert.NotEmpty(filteredBySearch!);
+    }
+
+    [Fact]
+    public async Task Shipments_GetById_ReturnsMatchingShipmentOrNotFound()
+    {
+        var client = _factory.CreateClient();
+        var found = await client.GetAsync("/api/v1/shipments/shp-1");
+        Assert.Equal(HttpStatusCode.OK, found.StatusCode);
+
+        var notFound = await client.GetAsync("/api/v1/shipments/non-existent-id");
+        Assert.Equal(HttpStatusCode.NotFound, notFound.StatusCode);
+    }
+
+    [Fact]
+    public async Task Shipments_TrackByCode_ReturnsMatchingShipmentOrNotFound()
     {
         var client = _factory.CreateClient();
         var response = await client.GetAsync("/api/v1/shipments/track/LP-8924-XQ");
@@ -60,6 +117,9 @@ public class LogisticsApiTests : IClassFixture<WebApplicationFactory<Program>>
         Assert.NotNull(shipment);
         Assert.Equal("LP-8924-XQ", shipment!.TrackingNumber);
         Assert.NotEmpty(shipment.Events);
+
+        var notFound = await client.GetAsync("/api/v1/shipments/track/LP-NON-EXISTENT");
+        Assert.Equal(HttpStatusCode.NotFound, notFound.StatusCode);
     }
 
     [Fact]
@@ -93,16 +153,43 @@ public class LogisticsApiTests : IClassFixture<WebApplicationFactory<Program>>
     }
 
     [Fact]
-    public async Task Shipments_Simulate_AdvancesStatus()
+    public async Task Shipments_UpdateStatus_UpdatesAndReturnsNotFoundWhenMissing()
     {
         var client = _factory.CreateClient();
-        // shp-4 starts as Pending
+        var updateDto = new UpdateStatusDto(ShipmentStatuses.Delayed, "Port of Seattle", "Weather delay encountered");
+
+        var response = await client.PatchAsJsonAsync("/api/v1/shipments/shp-1/status", updateDto);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        var updated = await response.Content.ReadFromJsonAsync<Shipment>();
+        Assert.NotNull(updated);
+        Assert.Equal(ShipmentStatuses.Delayed, updated!.Status);
+
+        var notFound = await client.PatchAsJsonAsync("/api/v1/shipments/shp-missing/status", updateDto);
+        Assert.Equal(HttpStatusCode.NotFound, notFound.StatusCode);
+    }
+
+    [Fact]
+    public async Task Shipments_Simulate_AdvancesStatusAndReturnsNotFoundWhenMissing()
+    {
+        var client = _factory.CreateClient();
+        // shp-4 starts as Pending -> PickedUp
         var response = await client.PostAsync("/api/v1/shipments/shp-4/simulate", null);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var updated = await response.Content.ReadFromJsonAsync<Shipment>();
         Assert.NotNull(updated);
         Assert.Equal(ShipmentStatuses.PickedUp, updated!.Status);
+
+        // Advance PickedUp -> InTransit
+        var response2 = await client.PostAsync("/api/v1/shipments/shp-4/simulate", null);
+        Assert.Equal(HttpStatusCode.OK, response2.StatusCode);
+        var updated2 = await response2.Content.ReadFromJsonAsync<Shipment>();
+        Assert.Equal(ShipmentStatuses.InTransit, updated2!.Status);
+
+        // Non-existent shipment simulate returns NotFound
+        var notFound = await client.PostAsync("/api/v1/shipments/shp-nonexistent/simulate", null);
+        Assert.Equal(HttpStatusCode.NotFound, notFound.StatusCode);
     }
 
     [Fact]
@@ -132,5 +219,40 @@ public class LogisticsApiTests : IClassFixture<WebApplicationFactory<Program>>
         var warehouses = await client.GetFromJsonAsync<List<Warehouse>>("/api/v1/warehouses");
         Assert.NotNull(warehouses);
         Assert.NotEmpty(warehouses!);
+    }
+
+    [Fact]
+    public async Task Fleet_Dispatch_AssignsDriverOrReturnsBadRequest()
+    {
+        var client = _factory.CreateClient();
+
+        var successDto = new DispatchDto("vh-4", "drv-4");
+        var successResponse = await client.PostAsJsonAsync("/api/v1/fleet/dispatch", successDto);
+        Assert.Equal(HttpStatusCode.OK, successResponse.StatusCode);
+
+        var failDto = new DispatchDto("veh-missing", "drv-missing");
+        var failResponse = await client.PostAsJsonAsync("/api/v1/fleet/dispatch", failDto);
+        Assert.Equal(HttpStatusCode.BadRequest, failResponse.StatusCode);
+    }
+
+    [Fact]
+    public async Task Inventory_ReturnsAllOrFilteredByWarehouse()
+    {
+        var client = _factory.CreateClient();
+
+        var allInventory = await client.GetFromJsonAsync<List<InventoryItem>>("/api/v1/inventory");
+        Assert.NotNull(allInventory);
+        Assert.NotEmpty(allInventory!);
+
+        var filtered = await client.GetFromJsonAsync<List<InventoryItem>>("/api/v1/inventory?warehouseId=wh-chi");
+        Assert.NotNull(filtered);
+        Assert.NotEmpty(filtered!);
+        Assert.All(filtered!, i => Assert.Equal("wh-chi", i.WarehouseId));
+    }
+
+    [Fact]
+    public void ServiceInfo_ContainsCorrectName()
+    {
+        Assert.Equal("testfinals-backend", ServiceInfo.Name);
     }
 }
