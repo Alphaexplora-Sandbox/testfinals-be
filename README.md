@@ -1,35 +1,62 @@
-# testfinals-backend
+# testfinals-backend: LogiPulse Logistics Cloud API
 
-Created by ALPHACI as a .NET service standalone repository.
+Enterprise .NET 10 minimal Web API backend for the **LogiPulse Logistics Cloud**, managed with **AlphaCI Enterprise** CI/CD pipeline automation and deployed to **Render**.
 
-This starter already includes source files, package scripts, TypeScript, ESLint, Jest coverage, SonarQube metadata, branch protections, and ALPHACI workflow files that match the selected stack. Use it as the first working baseline, then replace the starter code with your application code.
+## Features & Endpoints
 
-## Project structure
+- **Contract & Health Probes**:
+  - `GET /health`: Health probe validated by AlphaCI production gate (HTTP 200 `{ "status": "ok", "service": "testfinals-backend" }`).
+  - `GET /`: Service readiness check.
+- **Authentication**:
+  - `POST /api/v1/auth/login`: Authenticates dispatcher/admin/driver profiles with demo credentials.
+  - `GET /api/v1/auth/me`: Retrieves current session user info from Bearer token.
+- **Shipments & Waybill Telematics**:
+  - `GET /api/v1/shipments`: Filterable by status and searchable by tracking number/route.
+  - `GET /api/v1/shipments/{id}`: Detailed shipment dossier with full checkpoint event timeline.
+  - `GET /api/v1/shipments/track/{trackingNumber}`: Public lookup endpoint.
+  - `POST /api/v1/shipments`: Waybill issuance and tracking registration.
+  - `PATCH /api/v1/shipments/{id}/status`: Checkpoint telemetry update.
+  - `POST /api/v1/shipments/{id}/simulate`: Advances shipment state to next milestone.
+- **Fleet & Vehicle Telematics**:
+  - `GET /api/v1/fleet/vehicles`: Fleet status, battery/fuel reserve, capacity, GPS waypoint.
+  - `GET /api/v1/fleet/drivers`: Driver roster, license classification, ratings.
+  - `POST /api/v1/fleet/dispatch`: Assigns driver and vehicle to shipment route.
+- **Warehouses & Inventory**:
+  - `GET /api/v1/warehouses`: Multi-hub capacity and occupancy tracking (Chicago, Rotterdam, Dallas, Singapore, Frankfurt).
+  - `GET /api/v1/inventory`: Warehouse SKU stock monitoring and reorder alerts.
+- **Analytics & SLA**:
+  - `GET /api/v1/analytics/overview`: Real-time KPI summary (on-time rate, active cargo, delayed alerts).
 
-- `src/<Project>/Program.cs` boots the minimal API and exposes `/health`, which the production gate probes after each deployment.
-- `tests/<Project>.Tests/` hosts the application in memory with `WebApplicationFactory`, so coverage reflects code that actually runs.
-- `.editorconfig` is what `dotnet format` checks against; the pipeline runs it at warning severity on uat and main.
-- `global.json` pins the SDK so local builds and CI resolve the same version.
+## Render Environment Variables
 
-## Branch strategy
+Configure these in **Render Dashboard** -> Service -> **Environment**:
 
-| Branch  | Purpose |
-|---------|---------|
-| main    | Production - protected |
-| uat     | Integration and test - protected |
-| develop | Development integration - unprotected, no CI pipeline |
+| Variable | Recommended Value | Purpose |
+|---|---|---|
+| `ASPNETCORE_ENVIRONMENT` | `Production` (or `Staging` on UAT) | Runtime environment mode |
+| `ASPNETCORE_URLS` | `http://0.0.0.0:8080` | Required for Docker container listening on port 8080 |
+| `PORT` | `8080` | Port configuration |
+| `CORS_ORIGINS` | `https://*.vercel.app,https://testfinals-frontend.vercel.app,http://localhost:3000` | Allowed frontend origins for CORS |
 
-## CI/CD
+## Branch Strategy & Promotion Workflow
 
-Workflow files live in `.github/workflows/`. The CI pipeline runs on `uat` and `main` only. `develop` and user-created branches do not trigger workflows. Push to `uat` to trigger your first run.
+Always create your working branch from `dev`:
+```bash
+git checkout dev
+git pull origin dev
+git checkout -b feat/your-feature
+```
 
-## Getting started
+Open a pull request into `dev`. Once merged:
+1. `dev`: AlphaCI runs quality checks and triggers `promote-to-uat`.
+2. `uat`: Builds Docker container, deploys to Render UAT slot, and triggers post-deploy verification.
+3. `main`: Once UAT is verified green, promotes to `main` and deploys to Production.
+
+## Local Development & Testing
 
 ```bash
 dotnet restore
 dotnet format --verify-no-changes
-dotnet build --configuration Release --no-restore
-dotnet test --collect:"XPlat Code Coverage"
+dotnet build --configuration Release
+dotnet test
 ```
-
-Create a feature branch, open a pull request into `dev`, and let ALPHACI promote green changes through `uat` to `main`.
