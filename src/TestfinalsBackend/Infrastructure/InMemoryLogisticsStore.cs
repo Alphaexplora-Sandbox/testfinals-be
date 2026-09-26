@@ -5,6 +5,16 @@ namespace TestfinalsBackend.Infrastructure;
 
 public sealed class InMemoryLogisticsStore : ILogisticsStore
 {
+    private const string UnitsLiteral = "Units";
+    private const string Driver1Id = "drv-1";
+    private const string Driver2Id = "drv-2";
+    private const string Driver3Id = "drv-3";
+    private const string Vehicle1Id = "vh-1";
+    private const string Vehicle2Id = "vh-2";
+    private const string StatusAvailable = "Available";
+    private const string StatusOnRoute = "OnRoute";
+    private const string StatusOnDelivery = "OnDelivery";
+
     private readonly ConcurrentDictionary<string, Shipment> _shipments = new();
     private readonly ConcurrentDictionary<string, Vehicle> _vehicles = new();
     private readonly ConcurrentDictionary<string, Driver> _drivers = new();
@@ -59,12 +69,12 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
     {
         var items = new[]
         {
-            new InventoryItem("inv-1", "SKU-ELEC-409", "Automotive ECU Controller", "Electronics", "wh-chi", 420, "Units", 100),
-            new InventoryItem("inv-2", "SKU-COLD-882", "Vaccine Temperature Monitors", "Pharma/ColdChain", "wh-rtm", 1150, "Units", 250),
-            new InventoryItem("inv-3", "SKU-HEAVY-102", "Hydraulic Cylinder Assy 50mm", "Industrial", "wh-dfw", 84, "Units", 30),
-            new InventoryItem("inv-4", "SKU-DRONE-501", "LiPo Battery Cells 48V", "Batteries/Hazmat", "wh-sin", 640, "Units", 150),
+            new InventoryItem("inv-1", "SKU-ELEC-409", "Automotive ECU Controller", "Electronics", "wh-chi", 420, UnitsLiteral, 100),
+            new InventoryItem("inv-2", "SKU-COLD-882", "Vaccine Temperature Monitors", "Pharma/ColdChain", "wh-rtm", 1150, UnitsLiteral, 250),
+            new InventoryItem("inv-3", "SKU-HEAVY-102", "Hydraulic Cylinder Assy 50mm", "Industrial", "wh-dfw", 84, UnitsLiteral, 30),
+            new InventoryItem("inv-4", "SKU-DRONE-501", "LiPo Battery Cells 48V", "Batteries/Hazmat", "wh-sin", 640, UnitsLiteral, 150),
             new InventoryItem("inv-5", "SKU-PHARM-331", "Medical Refrigerated Vials", "Pharma/ColdChain", "wh-fra", 290, "Vials", 80),
-            new InventoryItem("inv-6", "SKU-ELEC-771", "Fiber Optic Transceivers 100G", "Telecom", "wh-chi", 850, "Units", 200)
+            new InventoryItem("inv-6", "SKU-ELEC-771", "Fiber Optic Transceivers 100G", "Telecom", "wh-chi", 850, UnitsLiteral, 200)
         };
 
         foreach (var item in items)
@@ -77,10 +87,10 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
     {
         var drivers = new[]
         {
-            new Driver("drv-1", "Marcus Vance", "CDL-IL-981244", "+1 (312) 555-0192", "OnDelivery", 4.95, "vh-1"),
-            new Driver("drv-2", "Elena Rostova", "CDL-TX-551982", "+1 (214) 555-0144", "OnDelivery", 4.98, "vh-2"),
-            new Driver("drv-3", "Tariq Al-Mansoor", "CDL-EU-882910", "+31 20 555 0177", "Available", 4.89, "vh-3"),
-            new Driver("drv-4", "Sarah Jenkins", "CDL-IL-772183", "+1 (312) 555-0188", "Available", 4.92, null)
+            new Driver(Driver1Id, "Marcus Vance", "CDL-IL-981244", "+1 (312) 555-0192", StatusOnDelivery, 4.95, Vehicle1Id),
+            new Driver(Driver2Id, "Elena Rostova", "CDL-TX-551982", "+1 (214) 555-0144", StatusOnDelivery, 4.98, Vehicle2Id),
+            new Driver(Driver3Id, "Tariq Al-Mansoor", "CDL-EU-882910", "+31 20 555 0177", StatusAvailable, 4.89, "vh-3"),
+            new Driver("drv-4", "Sarah Jenkins", "CDL-IL-772183", "+1 (312) 555-0188", StatusAvailable, 4.92, null)
         };
 
         foreach (var d in drivers)
@@ -93,10 +103,10 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
     {
         var vehicles = new[]
         {
-            new Vehicle("vh-1", "IL-FREIGHT-99", "Freightliner Cascadia 126", "Semi-Trailer", "OnRoute", 22000, 78, "I-55 Southbound mm 142", "drv-1"),
-            new Vehicle("vh-2", "TX-VOLVO-44", "Volvo VNL 860 Sleeper", "Box Truck", "OnRoute", 12500, 85, "Dallas Metro Ring I-635", "drv-2"),
-            new Vehicle("vh-3", "NL-MERC-12", "Mercedes-Benz Sprinter 3500", "Cargo Van", "Available", 3200, 92, "Rotterdam Hub Bay 4", "drv-3"),
-            new Vehicle("vh-4", "EV-FORD-80", "Ford E-Transit Electric", "Electric Van", "Available", 2400, 95, "Chicago Central Charging Bay", null),
+            new Vehicle(Vehicle1Id, "IL-FREIGHT-99", "Freightliner Cascadia 126", "Semi-Trailer", StatusOnRoute, 22000, 78, "I-55 Southbound mm 142", Driver1Id),
+            new Vehicle(Vehicle2Id, "TX-VOLVO-44", "Volvo VNL 860 Sleeper", "Box Truck", StatusOnRoute, 12500, 85, "Dallas Metro Ring I-635", Driver2Id),
+            new Vehicle("vh-3", "NL-MERC-12", "Mercedes-Benz Sprinter 3500", "Cargo Van", StatusAvailable, 3200, 92, "Rotterdam Hub Bay 4", Driver3Id),
+            new Vehicle("vh-4", "EV-FORD-80", "Ford E-Transit Electric", "Electric Van", StatusAvailable, 2400, 95, "Chicago Central Charging Bay", null),
             new Vehicle("vh-5", "NL-SCANIA-07", "Scania 540 S Cold-Master", "Cold Chain Semi", "Maintenance", 20000, 45, "Frankfurt Depot Service Yard", null)
         };
 
@@ -123,8 +133,8 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
             ShipmentPriorities.Express,
             1450.5,
             now.AddHours(6),
-            "drv-1",
-            "vh-1",
+            Driver1Id,
+            Vehicle1Id,
             now.AddDays(-2),
             now.AddHours(-1),
             new List<TrackingEvent>
@@ -148,8 +158,8 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
             ShipmentPriorities.ColdChain,
             380.0,
             now.AddHours(2),
-            "drv-2",
-            "vh-2",
+            Driver2Id,
+            Vehicle2Id,
             now.AddDays(-1),
             now.AddMinutes(-30),
             new List<TrackingEvent>
@@ -172,8 +182,8 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
             ShipmentPriorities.Overnight,
             820.0,
             now.AddHours(-4),
-            "drv-1",
-            "vh-1",
+            Driver1Id,
+            Vehicle1Id,
             now.AddDays(-3),
             now.AddHours(-4),
             new List<TrackingEvent>
@@ -219,7 +229,7 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
             ShipmentPriorities.Express,
             410.0,
             now.AddHours(8),
-            "drv-3",
+            Driver3Id,
             "vh-5",
             now.AddDays(-1),
             now.AddHours(-2),
@@ -361,8 +371,8 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
             return false;
         }
 
-        _vehicles[vehicleId] = vehicle with { AssignedDriverId = driverId, Status = "OnRoute" };
-        _drivers[driverId] = driver with { AssignedVehicleId = vehicleId, Status = "OnDelivery" };
+        _vehicles[vehicleId] = vehicle with { AssignedDriverId = driverId, Status = StatusOnRoute };
+        _drivers[driverId] = driver with { AssignedVehicleId = vehicleId, Status = StatusOnDelivery };
         return true;
     }
 
@@ -406,7 +416,7 @@ public sealed class InMemoryLogisticsStore : ILogisticsStore
         var delayed = shipments.Count(s => s.Status == ShipmentStatuses.Delayed);
 
         var vehicles = _vehicles.Values;
-        var activeVehicles = vehicles.Count(v => v.Status == "OnRoute");
+        var activeVehicles = vehicles.Count(v => v.Status == StatusOnRoute);
         var fleetUtil = vehicles.Count > 0 ? Math.Round((double)activeVehicles / vehicles.Count * 100, 1) : 0;
 
         var warehouses = _warehouses.Values;
