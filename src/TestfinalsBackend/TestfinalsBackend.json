@@ -1,0 +1,907 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "TestfinalsBackend | v1",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserProfile"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/analytics/overview": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LogisticsAnalytics"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Shipment"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateShipmentDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/{id}": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/track/{trackingNumber}": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "parameters": [
+          {
+            "name": "trackingNumber",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/{id}/status": {
+      "patch": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStatusDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/shipments/{id}/simulate": {
+      "post": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Shipment"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fleet/vehicles": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Vehicle"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fleet/drivers": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Driver"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/fleet/dispatch": {
+      "post": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DispatchDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    },
+    "/api/v1/warehouses": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Warehouse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/inventory": {
+      "get": {
+        "tags": [
+          "TestfinalsBackend"
+        ],
+        "parameters": [
+          {
+            "name": "warehouseId",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InventoryItem"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CreateShipmentDto": {
+        "required": [
+          "senderName",
+          "senderAddress",
+          "recipientName",
+          "recipientAddress",
+          "origin",
+          "destination",
+          "priority",
+          "weightKg",
+          "estimatedDays",
+          "assignedDriverId",
+          "assignedVehicleId"
+        ],
+        "type": "object",
+        "properties": {
+          "senderName": {
+            "type": "string"
+          },
+          "senderAddress": {
+            "type": "string"
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "recipientAddress": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "weightKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "estimatedDays": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "assignedDriverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedVehicleId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "DispatchDto": {
+        "required": [
+          "vehicleId",
+          "driverId"
+        ],
+        "type": "object",
+        "properties": {
+          "vehicleId": {
+            "type": "string"
+          },
+          "driverId": {
+            "type": "string"
+          }
+        }
+      },
+      "Driver": {
+        "required": [
+          "id",
+          "fullName",
+          "licenseNumber",
+          "phone",
+          "status",
+          "rating",
+          "assignedVehicleId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "licenseNumber": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "rating": {
+            "type": "number",
+            "format": "double"
+          },
+          "assignedVehicleId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "HealthResponse": {
+        "required": [
+          "status",
+          "service"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "service": {
+            "type": "string"
+          }
+        }
+      },
+      "InventoryItem": {
+        "required": [
+          "id",
+          "sku",
+          "name",
+          "category",
+          "warehouseId",
+          "quantity",
+          "unit",
+          "reorderLevel"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "sku": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "category": {
+            "type": "string"
+          },
+          "warehouseId": {
+            "type": "string"
+          },
+          "quantity": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "reorderLevel": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      },
+      "LoginRequest": {
+        "required": [
+          "email",
+          "password"
+        ],
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string"
+          }
+        }
+      },
+      "LogisticsAnalytics": {
+        "required": [
+          "totalShipments",
+          "activeInTransit",
+          "deliveredToday",
+          "delayedAlerts",
+          "fleetUtilizationPct",
+          "warehouseOccupancyAvgPct",
+          "onTimeDeliveryRatePct"
+        ],
+        "type": "object",
+        "properties": {
+          "totalShipments": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "activeInTransit": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "deliveredToday": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "delayedAlerts": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "fleetUtilizationPct": {
+            "type": "number",
+            "format": "double"
+          },
+          "warehouseOccupancyAvgPct": {
+            "type": "number",
+            "format": "double"
+          },
+          "onTimeDeliveryRatePct": {
+            "type": "number",
+            "format": "double"
+          }
+        }
+      },
+      "Shipment": {
+        "required": [
+          "id",
+          "trackingNumber",
+          "senderName",
+          "senderAddress",
+          "recipientName",
+          "recipientAddress",
+          "origin",
+          "destination",
+          "status",
+          "priority",
+          "weightKg",
+          "estimatedDelivery",
+          "assignedDriverId",
+          "assignedVehicleId",
+          "createdAt",
+          "updatedAt",
+          "events"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "trackingNumber": {
+            "type": "string"
+          },
+          "senderName": {
+            "type": "string"
+          },
+          "senderAddress": {
+            "type": "string"
+          },
+          "recipientName": {
+            "type": "string"
+          },
+          "recipientAddress": {
+            "type": "string"
+          },
+          "origin": {
+            "type": "string"
+          },
+          "destination": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "priority": {
+            "type": "string"
+          },
+          "weightKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "estimatedDelivery": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "assignedDriverId": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedVehicleId": {
+            "type": "string",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "events": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TrackingEvent"
+            }
+          }
+        }
+      },
+      "TrackingEvent": {
+        "required": [
+          "id",
+          "shipmentId",
+          "status",
+          "location",
+          "description",
+          "timestamp"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "shipmentId": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "UpdateStatusDto": {
+        "required": [
+          "status",
+          "location",
+          "description"
+        ],
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        }
+      },
+      "UserProfile": {
+        "required": [
+          "id",
+          "username",
+          "email",
+          "fullName",
+          "role",
+          "token"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "fullName": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "Vehicle": {
+        "required": [
+          "id",
+          "plateNumber",
+          "model",
+          "type",
+          "status",
+          "capacityKg",
+          "fuelOrBatteryPct",
+          "currentLocation",
+          "assignedDriverId"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "plateNumber": {
+            "type": "string"
+          },
+          "model": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "capacityKg": {
+            "type": "number",
+            "format": "double"
+          },
+          "fuelOrBatteryPct": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "currentLocation": {
+            "type": "string"
+          },
+          "assignedDriverId": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Warehouse": {
+        "required": [
+          "id",
+          "code",
+          "name",
+          "city",
+          "country",
+          "capacitySqM",
+          "occupancyPct",
+          "activeShipments"
+        ],
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "code": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "city": {
+            "type": "string"
+          },
+          "country": {
+            "type": "string"
+          },
+          "capacitySqM": {
+            "type": "number",
+            "format": "double"
+          },
+          "occupancyPct": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "activeShipments": {
+            "type": "integer",
+            "format": "int32"
+          }
+        }
+      }
+    }
+  },
+  "tags": [
+    {
+      "name": "TestfinalsBackend"
+    }
+  ]
+}

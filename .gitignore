@@ -7,6 +7,8 @@ obj/
 *.json.openapi
 src/*/[A-Z]*.json
 !src/*/appsettings*.json
+!src/TestfinalsBackend/TestfinalsBackend.json
+!openapi.json
 publish/
 TestResults/
 coverage/
